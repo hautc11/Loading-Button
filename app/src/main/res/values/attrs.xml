@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="LoadingButton">
+        <attr name="loadingButtonBackgroundColor" format="color" />
+        <attr name="loadingButtonProgressColor" format="color" />
+        <attr name="loadingButtonText" format="string" />
     </declare-styleable>
 </resources>

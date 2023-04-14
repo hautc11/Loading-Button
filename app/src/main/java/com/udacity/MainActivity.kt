@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -36,13 +38,30 @@ class MainActivity : AppCompatActivity() {
         custom_button.setOnClickListener {
             if (url.isEmpty()) {
                 Toast.makeText(this, "Please select file to download!", Toast.LENGTH_SHORT).show()
-            } else {
+                return@setOnClickListener
+            }
+            if (!isInternetNotAvailable()) {
                 custom_button.setNewStateForButton(ButtonState.Loading)
                 download(url)
+            } else {
+                NotificationUtil().makeANotification(
+                    applicationContext,
+                    url,
+                    Constants.STATUS_FAILED
+                )
+                custom_button.setNewStateForButton(ButtonState.Clicked)
             }
         }
 
         handleRadioButtonSelect()
+    }
+
+    private fun isInternetNotAvailable() : Boolean{
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+
+        return networkCapabilities == null || !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     private fun handleRadioButtonSelect() {
@@ -67,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 DownloadManager.STATUS_SUCCESSFUL -> {
+                    custom_button.setNewStateForButton(ButtonState.Completed)
                     NotificationUtil().makeANotification(
                         applicationContext,
                         url,

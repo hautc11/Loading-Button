@@ -58,11 +58,11 @@ class NotificationUtil {
 
         val builder = NotificationCompat.Builder(context, Constants.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setAutoCancel(true)
             .setContentTitle(if (status == Constants.STATUS_SUCCESS) "Udacity: Android Kotlin Nanodegree." else "ERROR.")
             .setContentText(if (status == Constants.STATUS_SUCCESS) "The project is download" else "Something wrong happened.")
-            .setContentIntent(contentPendingIntent)
             .addAction(0, "Check the status", contentPendingIntent)
-            .setAutoCancel(true)
+            .setContentIntent(contentPendingIntent)
 
         NotificationManagerCompat.from(context).notify(Constants.NOTIFICATION_ID, builder.build())
     }

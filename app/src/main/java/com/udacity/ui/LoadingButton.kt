@@ -24,24 +24,13 @@ class LoadingButton @JvmOverloads constructor(
     private var heightSize = 0
 
     private var valueAnimatorLoadButton = ValueAnimator()
-    private var textDisplay = ""
+    private var textDisplay: String
 
-    private val paintButton = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        strokeWidth = 4f
-        color = ResourcesCompat.getColor(resources, R.color.colorPrimary, null)
-    }
+    private var paintButton: Paint
 
-    private val paintCircleProgress = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        strokeWidth = 4f
-        color = ResourcesCompat.getColor(resources, R.color.colorAccent, null)
-    }
+    private var paintCircleProgress: Paint
 
-    private val paintText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create("", Typeface.BOLD)
-        textSize = resources.getDimension(R.dimen.textSize)
-        color = ResourcesCompat.getColor(resources, R.color.white, null)
-    }
+    private var paintText: Paint
 
     private val paintProgressLoading = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
@@ -58,6 +47,7 @@ class LoadingButton @JvmOverloads constructor(
         when (newState) {
             ButtonState.Clicked   -> {
                 textDisplay = "Download"
+                resetUI()
                 invalidate()
             }
             ButtonState.Loading   -> {
@@ -67,19 +57,66 @@ class LoadingButton @JvmOverloads constructor(
             }
             ButtonState.Completed -> {
                 textDisplay = "Download"
+                valueAnimatorLoadButton.removeAllListeners()
+                valueAnimatorLoadButton.end()
+                resetUI()
                 invalidate()
             }
         }
     }
 
+    private fun resetUI() {
+        width = 0f
+        progress = 0f
+        requestLayout()
+    }
+
+    init {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.LoadingButton)
+
+        textDisplay = typedArray.getString(R.styleable.LoadingButton_loadingButtonText) ?: ""
+
+        paintButton = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            strokeWidth = 4f
+            color = typedArray.getColor(
+                R.styleable.LoadingButton_loadingButtonBackgroundColor,
+                ResourcesCompat.getColor(resources, R.color.colorPrimary, null)
+            )
+        }
+
+        paintCircleProgress = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            strokeWidth = 4f
+            color = ResourcesCompat.getColor(resources, R.color.colorAccent, null)
+        }
+
+        paintText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create("", Typeface.BOLD)
+            textSize = resources.getDimension(R.dimen.textSize)
+            color = ResourcesCompat.getColor(resources, R.color.white, null)
+        }
+
+        typedArray.recycle()
+    }
+
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        drawLoadingButton(canvas)
+        drawText(canvas)
+        drawArc(canvas)
+    }
+
     private fun animateLoadingState() {
         valueAnimatorLoadButton = ValueAnimator.ofFloat(0F, widthSize.toFloat()).apply {
-            duration = 3500
+            duration = 2000L
             addUpdateListener { animation ->
                 width = animation.animatedValue as Float
                 progress = (360f * width) / widthSize.toFloat()
                 invalidate()
             }
+            repeatMode = ValueAnimator.RESTART
+            repeatCount = ValueAnimator.INFINITE
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     buttonState = ButtonState.Completed
@@ -90,19 +127,6 @@ class LoadingButton @JvmOverloads constructor(
             })
             start()
         }
-    }
-
-
-    init {
-        buttonState = ButtonState.Clicked
-    }
-
-
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        drawLoadingButton(canvas)
-        drawText(canvas)
-        drawArc(canvas)
     }
 
     private fun drawArc(canvas: Canvas) {
