@@ -120,7 +120,6 @@ class MainActivity : AppCompatActivity() {
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 
-
         downloadManager.enqueue(request)
     }
 }
